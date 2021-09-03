@@ -29,37 +29,10 @@ namespace KK_TestPlugin
         {
             Logger = base.Logger;    
             CharacterApi.RegisterExtraBehaviour<TestPluginCharaController>(GUID);      
+
+            var hi = new Harmony(GUID);
+            Hooks.InitHooks(hi);
         }    
     }
 
-    public class TestPluginCharaController: CharaCustomFunctionController
-    {  
-
-        //Ignore
-        protected override void OnCardBeingSaved(GameMode currentGameMode)
-        {
-
-        }
-
-        protected override void Start() 
-        { 
-            base.Start();
-        }
-
-        protected override void OnReload(GameMode currentGameMode)
-        {
-            TestPlugin.Logger.LogWarning($" Reload() Started");
-        }
-
-        protected override void Update()
-        {
-
-        }
-
-
-
-
-
-
-    }
 }

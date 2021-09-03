@@ -113,6 +113,8 @@
 
   <ItemGroup>    
     <Compile Include="..\TestPlugin.Core\TestPlugin.cs" />
+    <Compile Include="..\TestPlugin.Core\ChaControl.cs" />
+    <Compile Include="..\TestPlugin.Core\Hooks.cs" />
   </ItemGroup>
 
   <ItemGroup>
