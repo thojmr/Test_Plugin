@@ -7,8 +7,10 @@ Project("{GAE04EC0-301F-11D3-BF4B-00C04F79EFBD}") = "KK_TestPlugin", "TestPlugin
 EndProject
 Project("{GAE04EC0-301F-11D3-BF4B-00C04F79EFCD}") = "HS2_TestPlugin", "TestPlugin\HS2_TestPlugin\HS2_TestPlugin.csproj", "{830A00A6-2935-4EA0-81F0-B16D3E71B75D}"
 EndProject
-Project("{GAE04EC0-301F-11D3-BF4B-00C04F79EFCD}") = "AI_TestPlugin", "TestPlugin\AI_TestPlugin\AI_TestPlugin.csproj", "{830A00A6-2935-4EA0-81F0-B16D3E71B76D}"
+Project("{GAE04EC0-301F-11D3-BF4B-00C04F79EFDD}") = "AI_TestPlugin", "TestPlugin\AI_TestPlugin\AI_TestPlugin.csproj", "{830A00A6-2935-4EA0-81F0-B16D3E71B76D}"
 EndProject
+# Project("{GAE04EC0-301F-11D3-BF4B-00C04F79EFED}") = "KKS_TestPlugin", "TestPlugin\KKS_TestPlugin\KKS_TestPlugin.csproj", "{830A00A6-2935-4EA0-81F0-B16D3E71B77D}"
+# EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{830A00A6-2935-4EA0-81F0-B16D3E71B76D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{830A00A6-2935-4EA0-81F0-B16D3E71B76D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{830A00A6-2935-4EA0-81F0-B16D3E71B76D}.Release|Any CPU.Build.0 = Release|Any CPU		
+		{830A00A6-2935-4EA0-81F0-B16D3E71B77D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{830A00A6-2935-4EA0-81F0-B16D3E71B77D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{830A00A6-2935-4EA0-81F0-B16D3E71B77D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{830A00A6-2935-4EA0-81F0-B16D3E71B77D}.Release|Any CPU.Build.0 = Release|Any CPU		
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
