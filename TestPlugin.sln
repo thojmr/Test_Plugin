@@ -9,8 +9,8 @@ Project("{GAE04EC0-301F-11D3-BF4B-00C04F79EFCD}") = "HS2_TestPlugin", "TestPlugi
 EndProject
 Project("{GAE04EC0-301F-11D3-BF4B-00C04F79EFDD}") = "AI_TestPlugin", "TestPlugin\AI_TestPlugin\AI_TestPlugin.csproj", "{830A00A6-2935-4EA0-81F0-B16D3E71B76D}"
 EndProject
-# Project("{GAE04EC0-301F-11D3-BF4B-00C04F79EFED}") = "KKS_TestPlugin", "TestPlugin\KKS_TestPlugin\KKS_TestPlugin.csproj", "{830A00A6-2935-4EA0-81F0-B16D3E71B77D}"
-# EndProject
+Project("{GAE04EC0-301F-11D3-BF4B-00C04F79EFED}") = "KKS_TestPlugin", "TestPlugin\KKS_TestPlugin\KKS_TestPlugin.csproj", "{830A00A6-2935-4EA0-81F0-B16D3E71B77D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
