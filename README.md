@@ -11,3 +11,10 @@ The script finds every cloth mesh, and grabs their textures.  It then raycasts t
 It will also spit the texture out to your root game directory if you wan to see the result
 
 [Code is in ChaControl.cs](https://github.com/thojmr/Test_Plugin/blob/texture-merge-and-paint/TestPlugin/TestPlugin.Core/ChaControl.cs)
+
+
+### What it needs
+More efficient code, and threading
+Socks seem to work, but other cloth not being detected (or not getting raycast hit)
+Ideally this would not only set the body text, but also one for each cloth item too
+lots of love
