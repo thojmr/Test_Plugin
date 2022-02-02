@@ -14,7 +14,7 @@ It will also spit the texture out to your root game directory if you wan to see 
 
 
 ### What it needs
-More efficient code, and threading
-Socks seem to work, but other cloth not being detected (or not getting raycast hit)
-Ideally this would not only set the body text, but also one for each cloth item too
-lots of love
+- More efficient code, and threading
+- Socks seem to work, but other cloth not being detected (or not getting raycast hit)
+- Ideally this would not only set the body text, but also one for each cloth item too
+- lots of love
