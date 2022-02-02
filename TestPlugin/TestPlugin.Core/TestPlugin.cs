@@ -1,5 +1,6 @@
 using BepInEx;
 using BepInEx.Logging;
+using BepInEx.Configuration;
 using HarmonyLib;
 using System;
 using System.Collections;
@@ -25,6 +26,8 @@ namespace KK_TestPlugin
         public const string Version = "0.1";
         internal static new ManualLogSource Logger { get; private set; }        
 
+        public static ConfigEntry<KeyboardShortcut> TriggerTextureCompute { get; private set; }  
+
         internal void Start()
         {
             Logger = base.Logger;    
@@ -32,6 +35,10 @@ namespace KK_TestPlugin
 
             var hi = new Harmony(GUID);
             Hooks.InitHooks(hi);
+
+            //Keybind for triggering texture compute
+            TriggerTextureCompute  = Config.Bind<KeyboardShortcut>("Keybinds", "Trigger Texture Compute", new KeyboardShortcut(),
+                new ConfigDescription("Rquires that the correct shader be loaded to the character's body"));
         }    
     }
 
