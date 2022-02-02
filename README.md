@@ -1,3 +1,4 @@
+# Shader Texture Merge and Paint tool
 This branch has the automatic texture merging and painting code to be used with the "xukmi/SkinPlusTess" shaders.  It attempts to "paint" clothing depression to the body mesh.
 
 ## Note
