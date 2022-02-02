@@ -49,6 +49,7 @@ namespace KK_TestPlugin
 
         protected override void Update()
         {
+            //Trigger on key press configured in plugin config
             if (TestPlugin.TriggerTextureCompute.Value.IsDown())
             {
                 TriggerMaterialPaint();
@@ -64,7 +65,7 @@ namespace KK_TestPlugin
         {
             //White goes out, black in, and grey no change
             var defaultColor = Color.grey;
-            var displaceColor = Color.white;
+            var displaceColor = Color.black;
             
             var bodySmr = GetBodyMeshRenderer();
             var bodyTriangles = bodySmr.sharedMesh.triangles;
@@ -95,7 +96,7 @@ namespace KK_TestPlugin
                 //init body Uvs that we want to paint white
                 var bodyIsVisibleList = new bool[bodySmr.sharedMesh.vertexCount];
                 //Tracks which body verts were hit (computed from triangle index hit)
-                var hitUvCoordList = new Vector2[bodySmr.sharedMesh.vertexCount];
+                var hitUvCoordList = new Vector2[bodySmr.sharedMesh.vertexCount];                
 
                 //Bake mesh to align with the meshCollider
                 var bakedMesh = new Mesh();
@@ -114,65 +115,77 @@ namespace KK_TestPlugin
                 var normals = bakedMesh.normals;                
                 var hitTriList = new int[uvs.Length];
                 var hitCount = 0;
-                TestPlugin.Logger.LogInfo($" {smr.name} texture {clothTexture.height}x{clothTexture.width}   uvs {uvs.Length}");
-
-                //Raycast each cloth vertex towards meshcollider and get uv hit
-                for (int i = 0; i < verts.Length; i++)
-                {
-                    var _direction = -normals[i];
-                    var origin = verts[i];
-                    var tryHit = RayCastToMeshCollider(origin, rayMaxDistance, _direction, meshCollider);
-
-                    //If we hit the body
-                    if (tryHit.distance > 0 && tryHit.distance < rayMaxDistance) 
-                    {           
-                        hitCount++;
-                        //Convert UV coords to pixel coords
-                        var x = Mathf.FloorToInt(bakedMesh.uv[i].x * clothTexture.width);
-                        var y = Mathf.FloorToInt(bakedMesh.uv[i].y * clothTexture.height);
-
-                        //Check the cloth vert color
-                        var color = clothTexture.GetPixel(x, y);
-                        var isTransparent = color.a < 0.01f;                        
-                        if (!isTransparent) continue;
-
-                        //If the uv hit, then we have a triangle index.  Get the vert indexes from that
-                        var i1 = bodyTriangles[tryHit.triangleIndex * 3 + 0];
-                        var i2 = bodyTriangles[tryHit.triangleIndex * 3 + 1];
-                        var i3 = bodyTriangles[tryHit.triangleIndex * 3 + 2];
-                        
-                        bodyIsVisibleList[i1] = true;
-                        bodyIsVisibleList[i2] = true;
-                        bodyIsVisibleList[i3] = true;
-                        hitUvCoordList[i1] = tryHit.textureCoord;
-                        hitUvCoordList[i2] = tryHit.textureCoord;
-                        hitUvCoordList[i3] = tryHit.textureCoord;
-                    }        
-                }    
-                TestPlugin.Logger.LogInfo($" {smr.name} hitCount {hitCount}");
-                if (hitCount <= 0) continue;
-
-
-                //For each body Uv, if it has transparent cloth above, make its pixel displaceOutColor
-                for (int i = 0; i < bodyIsVisibleList.Length; i++)
-                {              
-                    if (!bodyIsVisibleList[i]) continue;
-                                 
-                    //Convert UV coords to pixel coords
-                    var x = Mathf.FloorToInt(hitUvCoordList[i].x * bodyDisplacementText.width);
-                    var y = Mathf.FloorToInt(hitUvCoordList[i].y * bodyDisplacementText.height);
-
-                    // TestPlugin.Logger.LogWarning($" setting displaceColor i:{i} {x},{y} to {displaceColor}");
-                    bodyDisplacementText.SetPixel(x, y, displaceColor);                                        
-                }                
-                bodyDisplacementText.Apply();
+                TestPlugin.Logger.LogInfo($" {smr.name} texture {clothTexture.height}x{clothTexture.width}   uvs {uvs.Length}");   
+                var clothPixels = clothTexture.GetPixels();
+                //For each cloth index, gives the body uv it is above
+                var bodyUvClothProjectionWs = new Vector2[clothPixels.Length];
+                var bodyHitList = new bool[clothPixels.Length];
                 
+                // TestPlugin.Logger.LogInfo($" uvCornersWs {uvCornersWs[0]}    {uvCornersWs[1]}");
+
+                //Raycast cloth texture pixels to get matching body texture positions
+                for (int w = 0; w < clothTexture.width; w++) 
+                {
+                    var x = (float)w/clothTexture.width;                
+                    for (int h = 0; h < clothTexture.height; h++) 
+                    {
+                        var y = (float)h/clothTexture.height;
+                        var i = w + (h*clothTexture.width);
+
+                        //Convert uv corner xy to worldspace points
+                        UvToWorldspace(new Vector2(x, y), bakedMesh, out var uvPositionWs, out var uvNormal);
+
+                        var _direction = -uvNormal;
+                        var origin = uvPositionWs;
+                        var tryHit = RayCastToMeshCollider(origin, rayMaxDistance, _direction, meshCollider);                        
+
+                        //If we hit the body
+                        if (tryHit.distance > 0 && tryHit.distance < rayMaxDistance) 
+                        {     
+                            hitCount++;         
+
+                            //Get the texture hit
+                            bodyUvClothProjectionWs[i] = tryHit.textureCoord;
+                            bodyHitList[i] = true;        
+                            continue;      
+                        }                      
+                    }
+                }
+                TestPlugin.Logger.LogInfo($" {smr.name} hitCount {hitCount}");
+                if (hitCount <= 1) continue;
+
+                //loop through each pixel in the cloth texture
+                for (int w = 0; w < clothTexture.width; w++) 
+                {
+                    var x = Mathf.FloorToInt((float)w/clothTexture.width);                
+                    for (int h = 0; h < clothTexture.height; h++) 
+                    {                        
+                        var i = w + (h*clothTexture.width);                        
+                        //If the body was not hit, skip
+                        if (!bodyHitList[i]) continue;
+
+                        var y = Mathf.FloorToInt((float)h/clothTexture.height);
+                        
+                        //Convert body UV coords to pixel coords
+                        var bodyX = Mathf.FloorToInt(bodyUvClothProjectionWs[i].x * bodyDisplacementText.width);
+                        var bodyY = Mathf.FloorToInt(bodyUvClothProjectionWs[i].y * bodyDisplacementText.height);
+
+                        //Check the cloth uv color
+                        var color = clothTexture.GetPixel(x, y);
+                        var isTransparent = color.a < 0.01f;    
+
+                        //Set the body pixel color that we hit
+                        bodyDisplacementText.SetPixel(bodyX, bodyY, isTransparent ? defaultColor : displaceColor);
+
+                    }
+                }
+                bodyDisplacementText.Apply();            
 
                 //Now do it again for all other cloth meshes
             }      
 
             //Save the texture as a png to the rootGame directory for debugging
-            // SaveTexture(bodyDisplacementText);
+            SaveTexture(bodyDisplacementText);
             TestPlugin.Logger.LogInfo($" ");
 
             //Then apply that body material to the DisplaceTex shader texture
@@ -201,6 +214,65 @@ namespace KK_TestPlugin
 
 
 
+        //Project the cloth color down to the body texture
+        public Color GetProjectedColor(Texture2D clothTexture, float x, float y, Vector2 bodyStart, Vector2 bodyEnd, Color displaceColor, Color defaultColor)
+        {
+            //Convert to cloth x,y values
+            var clothX = Mathf.FloorToInt(((x - bodyStart.x)/(bodyEnd.x - bodyStart.x)) * clothTexture.width);
+            var clothY = Mathf.FloorToInt(((y - bodyStart.y)/(bodyEnd.y - bodyStart.y)) * clothTexture.height);
+
+            //If the cloth texture pixel is transparent return displaceColor
+            var isTransparent = clothTexture.GetPixel(clothX, clothY).a < 0.001f;
+            return isTransparent ? defaultColor : displaceColor; 
+        }
+
+        public bool IsBetween(float x, float y, Vector2 start, Vector2 end)
+        {
+            //if x is not inside the x start and end
+            if (x < start.x || x > end.x) return false;
+            //if y is not inside the y start and end
+            if (y < start.y || y > end.y) return false;
+
+            return true;
+        }
+
+        public void UvToWorldspace(Vector2 uv, Mesh mesh, out Vector3 positionWs, out Vector3 normal)
+        {
+            positionWs = Vector3.zero;
+            normal = Vector3.zero;
+
+            var tris = mesh.triangles;
+            var uvs = mesh.uv;
+            var verts = mesh.vertices;
+            var normals = mesh.normals;
+
+            for (var i = 0; i < tris.Length; i += 3) {
+                var u1 = uvs[tris[i]]; // get the triangle UVs
+                var u2 = uvs[tris[i+1]];
+                var u3 = uvs[tris[i+2]];
+                // calculate triangle area - if zero, skip it
+                var a = Area(u1, u2, u3); if (a == 0) continue;
+                // calculate barycentric coordinates of u1, u2 and u3
+                // if anyone is negative, point is outside the triangle: skip it
+                var a1 = Area(u2, u3, uv)/a; if (a1 < 0) continue;
+                var a2 = Area(u3, u1, uv)/a; if (a2 < 0) continue;
+                var a3 = Area(u1, u2, uv)/a; if (a3 < 0) continue;
+                // point inside the triangle - find mesh position by interpolation...
+                var p3D = a1*verts[tris[i]]+a2*verts[tris[i+1]]+a3*verts[tris[i+2]];
+                //Compute the average normal of the 3 triangle verts
+                normal = (normals[tris[i]] + normals[tris[i+1]] + normals[tris[i+2]])/3;
+                // and return it in world coordinates:
+                positionWs = transform.TransformPoint(p3D);
+                return;
+            }
+        }
+
+        // calculate signed triangle area using a kind of "2D cross product":
+        public float Area(Vector2 p1, Vector2 p2, Vector2 p3) {
+            var v1 = p1 - p3;
+            var v2 = p2 - p3;
+            return (v1.x * v2.y - v1.y * v2.x)/2;
+        }
 
 
         /// <summary>
